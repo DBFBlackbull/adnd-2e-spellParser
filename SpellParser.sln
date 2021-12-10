@@ -1,0 +1,16 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpellParser", "SpellParser\SpellParser.csproj", "{E49A30CD-0993-49AC-970D-017579074E18}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E49A30CD-0993-49AC-970D-017579074E18}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E49A30CD-0993-49AC-970D-017579074E18}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E49A30CD-0993-49AC-970D-017579074E18}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E49A30CD-0993-49AC-970D-017579074E18}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
