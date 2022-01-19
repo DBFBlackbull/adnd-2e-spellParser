@@ -1,18 +1,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace SpellParser;
 
 public static class ListExtensions
 {
-    public static string GetAndRemove(this IList<string> list, string stringToFind)
+    public static string GetAndRemove(this IList<string> list, string regexPattern)
     {
-        var s = list.FirstOrDefault(s => s.StartsWith(stringToFind, StringComparison.OrdinalIgnoreCase));
+        var regex = new Regex(regexPattern, RegexOptions.IgnoreCase);
+        var s = list.FirstOrDefault(s => regex.IsMatch(s));
         if (string.IsNullOrWhiteSpace(s))
             return string.Empty;
 
         list.Remove(s);
-        return s.Replace(stringToFind, "", StringComparison.OrdinalIgnoreCase);
+        return regex.Replace(s, "");
     }
 }
