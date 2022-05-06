@@ -8,108 +8,162 @@ namespace SpellParser
 {
     class Program
     {
-        private static readonly Regex MaterialRegex = new Regex(@"^The ?(?:spell’s)? material components? ?(?:for|of|comprises)? ?(?:this|the)? ?(?:spells?)? ?(?:is|are)? ?(.*)", RegexOptions.IgnoreCase);
-        private static readonly Regex NegateRegex = new Regex(@"Neg\.?", RegexOptions.IgnoreCase);
-        private static readonly Regex StaticRegex = new Regex(@"(\d+)([ \-a-z]+)", RegexOptions.IgnoreCase);
-        private static readonly Regex ScalingRegex = new Regex(@"(\d+|One)([ \-a-z]+)\/level(?: of caster)?", RegexOptions.IgnoreCase);
-        private static readonly Regex MultiplyRegex = new Regex(@"’ ?x ?", RegexOptions.IgnoreCase);
+        private static readonly Regex MaterialRegex = new (@"The ?(?:spell’s)? material components? ?(?:for|of|comprises)? ?(?:this|the)? ?(?:spells?)? ?(?:is|are)? ?(.*)", RegexOptions.IgnoreCase);
+        private static readonly Regex NegateRegex = new (@"Neg\.?", RegexOptions.IgnoreCase);
+        private static readonly Regex StaticRegex = new (@"(\d+[d0-9]*)([ \-’a-z]+)", RegexOptions.IgnoreCase);
+        private static readonly Regex ScalingRegex = new (@"(\d+|One)([ \-’a-z\.]+)(?:\/|per )levels?(?: of caster)?", RegexOptions.IgnoreCase);
+        private static readonly Regex MultiplyRegex = new (@"’ ?x ?", RegexOptions.IgnoreCase);
+        private static readonly Regex CriticalRegex = new (@"(\w+ ?(?:\(.*\))?),? ?(.*)", RegexOptions.IgnoreCase);
 
-        private static readonly Regex Level1Regex = new Regex(@"^(1st|First)-level Spells$", RegexOptions.IgnoreCase);
-        private static readonly Regex Level2Regex = new Regex(@"^(2nd|First)-level Spells$", RegexOptions.IgnoreCase);
-        private static readonly Regex Level3Regex = new Regex(@"^(3rd|First)-level Spells$", RegexOptions.IgnoreCase);
-        private static readonly Regex Level4Regex = new Regex(@"^(4th|First)-level Spells$", RegexOptions.IgnoreCase);
-        private static readonly Regex Level5Regex = new Regex(@"^(5th|First)-level Spells$", RegexOptions.IgnoreCase);
-        private static readonly Regex Level6Regex = new Regex(@"^(6th|First)-level Spells$", RegexOptions.IgnoreCase);
-        private static readonly Regex Level7Regex = new Regex(@"^(7th|First)-level Spells$", RegexOptions.IgnoreCase);
-        private static readonly Regex Level8Regex = new Regex(@"^(8th|First)-level Spells$", RegexOptions.IgnoreCase);
-        private static readonly Regex Level9Regex = new Regex(@"^(9th|First)-level Spells$", RegexOptions.IgnoreCase);
+        private static readonly Regex Level1Regex = new (@"^(1st|First)-level Spells$", RegexOptions.IgnoreCase);
+        private static readonly Regex Level2Regex = new (@"^(2nd|Second)-level Spells$", RegexOptions.IgnoreCase);
+        private static readonly Regex Level3Regex = new (@"^(3rd|Third)-level Spells$", RegexOptions.IgnoreCase);
+        private static readonly Regex Level4Regex = new (@"^(4th|Fourth)-level Spells$", RegexOptions.IgnoreCase);
+        private static readonly Regex Level5Regex = new (@"^(5th|Fifth)-level Spells$", RegexOptions.IgnoreCase);
+        private static readonly Regex Level6Regex = new (@"^(6th|Sixth)-level Spells$", RegexOptions.IgnoreCase);
+        private static readonly Regex Level7Regex = new (@"^(7th|Seventh)-level Spells$", RegexOptions.IgnoreCase);
+        private static readonly Regex Level8Regex = new (@"^(8th|Eigth)-level Spells$", RegexOptions.IgnoreCase);
+        private static readonly Regex Level9Regex = new (@"^(9th|Ninth)-level Spells$", RegexOptions.IgnoreCase);
 
-        private const string BaseSpellRegex = @"(?<!\*)({0})(?!\*)";
-        
+        private const string BaseSpellRegex = @"(?<!\*){0}(?!\*)";
+
+        private static readonly List<string> SpellRegexPatterns = new List<string>()
+        {
+            ", (heal),",
+            "(animate dead)",
+            "(astral spell)",
+            "(bag of holding)",
+            "(burning hands)",
+            "(charm person)",
+            "(confusion)",
+            "(contact other plane)",
+            "(corpse link)",
+            "(cure disease)",
+            "(cause disease)",
+            "(cure insanity)",
+            "(cause insanity)",
+            "(cure light wounds)",
+            "(cause light wounds)",
+            "(cure serious wounds)",
+            "(cause serious wounds)",
+            "(cure critical wounds)",
+            "(cause critical wounds)",
+            "(death spell)",
+            "(death’s door)",
+            "(detect evil)",
+            "(detect magic)",
+            "(dispel evil)",
+            "(dispel magic)",
+            "(drain undead)",
+            "(elixir of madness)",
+            "(empathic wound transfer)",
+            "(fear)( spell)",
+            "(feeblemind(?:edness)?)",
+            "(forget)( spell)",
+            "(geas)",
+            "(haste)( spell)",
+            "(heat metal)",
+            "(limited wish)",
+            "(magic font)",
+            "(magic jar)",
+            "(magic missile)",
+            "(mirror image)",
+            "(mystic transfer)",
+            "(permanency)",
+            "(portable holes?)",
+            "(potions? of invisibility)",
+            "(prismatic spray)",
+            "(protection from evil 10’ radius)",
+            "(protection from evil)",
+            "(protection from good)",
+            "(raise dead)",
+            "(reflecting pool)",
+            "(remove curse)",
+            "(resist turning)",
+            "(resurrection)",
+            "(restoration)",
+            "(revoke life force exchange)",
+            "(rope trick)",
+            "(scarab of insanity)",
+            "(scarab of protection)",
+            "(skeletal hands)",
+            "(slow) spell",
+            "(speak with dead)",
+            "(spectral sense)",
+            "(spectral voice)",
+            "(spirit bind)",
+            "(spirit release)",
+            "(stinking cloud)",
+            "(summon insects)",
+            "(symbol of insanity)",
+            "(transmute metal to wood)",
+            "(undead alacrity)",
+            @"(wish)[, \.]"
+        };
+
         private static readonly List<Regex> SpellRegex = new List<Regex>()
         {
-            new Regex(string.Format(BaseSpellRegex, "dispel magic"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "dispel evil"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "detect evil"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "detect magic"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "summon insects"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "protection from evil"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "protection from good"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "charm person"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "potions? of invisibility"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "stinking cloud"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "burning hands"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "mystic transfer"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "cure light wounds"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "cure serious wounds"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "cure critical wounds"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "cure disease"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "astral spell"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "bag of holding"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "rope trick"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "portable holes?"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "remove curse"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "corpse link"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "skeletal hands"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "spectral voice"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "forget)( spell"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "slow)( spell"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "haste)( spell"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "wish)( spell"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "limited wish"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "spirit bind"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "spirit release"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "spirit release"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "transmute metal to wood"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "heat metal"), RegexOptions.IgnoreCase),
-            new Regex(string.Format(BaseSpellRegex, "MM")),
-            new Regex(string.Format(BaseSpellRegex, "MC")),
-            new Regex(string.Format(BaseSpellRegex, "DMG")),
+            new (string.Format(BaseSpellRegex, "(MM)")),
+            new (string.Format(BaseSpellRegex, "(MC)")),
+            new (string.Format(BaseSpellRegex, "(DMG)")),
+            new (string.Format(BaseSpellRegex, "(PHB)")),
         };
 
         private const string Class = "wiz";
-        private const string Book = "The Complete Book of Necromancers";
-        private const string Page = "53";
-        private static string Level = "2";
+        private const string Book = @"Player\'s Option: Spells & Magic";
+        private static string Level = "4";
         private static string ScalingClass = "";
 
 
         public static void Main(string[] args)
         {
+            var regexes = SpellRegexPatterns
+                .Select(s => new Regex(string.Format(BaseSpellRegex, s), RegexOptions.IgnoreCase));
+            SpellRegex.AddRange(regexes);
 
             if (Class == "wiz")
                 ScalingClass = "[[@{level-wizard}]]";
             if (Class == "pri")
                 ScalingClass = "[[@{level-priest}]]";
 
+            const string page = "147";
+            
             var input = @"
-6th-Level Spells
 
-Transmute Bone to Steel 
-(Alteration, Necromancy) Reversible
-Range: 30 yards
+
+Vitriolic Sphere
+
+(Conjuration/Summoning, Elemental Water, Alchemy)
+
+Range: 150 yards
 Components: V, S, M
-Duration: Permanent
-Casting Time: 1 round
-Area of Effect: 1 creature or object
-Saving Throw: Special
-A wizard casting this spell makes any object made of bone, including a skeleton, as strong as steel. The spell may be cast only upon dead, inanimate bones; after they have been transmuted, the bones may now be animated by the usual means. Despite their increased strength, the bones do not change in appearance, and they retain their original weight. Bone objects make all future saving throws as if they were hard metal (DMG, page 39). Transmuted skeletons now have AC 3 and take half the usual damage from physical attacks. However, these skeletons still take normal damage from holy water and magical attacks and are also subject to spells affecting metal (transmute metal to wood or heat metal) and the attacks of creatures that especially affect metal, such as rust monsters.
-The reverse of this spell, transmute steel to bone, weakens any metal by making it as brittle as dry bone (altering all saving throws appropriately). Each non-living recipient of this spell must make an item saving throw vs. disintegration. If failed, the former metal item makes all future saves as if it were fashioned from bone. Metal armor loses its effectiveness,
-becoming AC 7. Whenever a successful hit is made by or upon the item, the transmuted object must make a save vs. crushing blow to remain intact and functional. Magic items weakened by this spell remain magical, with any bonuses applied to their saving throws. Weapons affected by this spell inflict –2 hp per die of damage (and must save to avoid breakage whenever they hit a target). Physical attacks versus transmuted metal creatures inflict +2 hp per die of damage. 
-The material components (for both versions of the spell) are steel filings and powdered bone.
+Duration: Special
+Casting Time: 4
+Area of Effect: 5-ft. radius
+Saving Throw: 1/2
+Subtlety: +4
+Knockdown: d8
+Sensory: Medium visual, large olfactory
+Critical: Large (1d3 hits) acid
+
+
+This spell conjures a one-foot sphere of glowing emerald acid that the caster can direct to strike any target within range. When it reaches its target, the sphere explodes and drenches the victim in potent acid. The victim suffers 1d4 points of damage per caster level (to a maximum damage of 12d4) and may attempt a saving throw vs. spell for half damage. If the victim fails his saving throw, he continues to suffer acid damage in the following rounds, sustaining two less dice of damage each round. For example, an 8th-level wizard inflicts 8d4 damage with this spell on the first round, 6d4 on the second round, 4d4 on the third round, 2d4 on the fourth round, and the spell ends in the fifth round. Each round, the subject is entitled to a saving throw—the spell ends when he succeeds, or when the acid damage runs its course. The acid can also be neutralized with soda, ash, lye, charcoal, or removed with a large quantity of water.
+
+The vitriolic sphere also splashes acid in a 5-foot radius around the primary target. Any creatures within the splash radius must save vs. paralyzation or suffer a splash hit that inflicts 1d4 points of damage per every five caster levels. Splash hits do not cause continuing damage. The material component for this spell is a drop of giant slug bile.
+
 Table of Contents
 ";
 
             var split = input.Split(new [] {"Table of Contents"}, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
-            var spells = split.Select(FormatSpell);
-            var output = string.Join("", spells);
+            var spells = split.Select(s => FormatSpell(s, page));
+            var output = string.Join("\n", spells);
 
             var spellFile = Path.Join(SolutionDirectory(), "spell.txt");
             File.WriteAllText(spellFile, output);
         }
 
-        private static string FormatSpell(string input)
+        private static string FormatSpell(string input, string page)
         {
             input = input
                 .Trim()
@@ -117,7 +171,7 @@ Table of Contents
                 .Replace("*", "&ast;")
                 .Replace('·', '•');
 
-            input = MultiplyRegex.Replace(input, "’ ✕ ");
+            input = MultiplyRegex.Replace(input, "’✕");
 
             var strings = input
                 .Split(new [] {"\n", "\r"}, StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
@@ -145,7 +199,7 @@ Table of Contents
             strings.RemoveAt(0);
 
             var name = nameSchoolRev[0].Trim();
-            SpellRegex.Add(new Regex(string.Format(BaseSpellRegex, name), RegexOptions.IgnoreCase));
+            SpellRegex.Insert(0, new Regex(string.Format(BaseSpellRegex, $"({name})"), RegexOptions.IgnoreCase));
             name = name.Replace("’", "\\'");
 
             var category = "";
@@ -155,7 +209,7 @@ Table of Contents
                 name = name.Replace("*", "").Trim();
             }
 
-            string school = "";
+            string school = ""; 
             if (nameSchoolRev.Length > 1)
                  school = nameSchoolRev[1].Replace("(", "").Replace(")", "").Trim();
             else
@@ -168,79 +222,106 @@ Table of Contents
                 }
             }
             
-            var sphere = strings.GetAndRemove("^Sphere: ");
-            var range = strings.GetAndRemove("^Range: ");
+            var sphere = strings.GetAndRemove("^Sphere:");
+            var range = strings.GetAndRemove("^Range:");
             if (OverwriteWithScaling(range, out var scaling))
                 range = scaling;
 
-            var components = strings.GetAndRemove("^Components: ");
-            var duration = strings.GetAndRemove("^Duration: ");
+            var components = strings.GetAndRemove("^Components:");
+            var duration = strings.GetAndRemove("^Duration:");
             if (OverwriteWithScaling(duration, out scaling))
                 duration = scaling;
 
-            var castingTime = strings.GetAndRemove("^Casting Time: ");
+            var castingTime = strings.GetAndRemove("^Casting Time:");
             if (OverwriteWithScaling(castingTime, out scaling))
                 castingTime = scaling;
 
-            var aoe = strings.GetAndRemove("^Area of Effect: ");
+            var aoe = strings.GetAndRemove("^Area of Effect:");
             if (OverwriteWithScaling(aoe, out scaling))
                 aoe = scaling;
 
-            var save = strings.GetAndRemove("^Saving Throw: ");
+            var save = strings.GetAndRemove("^Saving Throw:");
             var material = "";
             if (NegateRegex.IsMatch(save))
                 save = "Negate";
             if (save == "1/2")
                 save = "½";
 
+            var subtlety = strings.GetAndRemove("^Subtlety:");
+            var knockdown = strings.GetAndRemove("^Knockdown:");
+            var sensory = strings.GetAndRemove("^Sensory:");
+            var critical = strings.GetAndRemove("^Critical:");
+            var critSize = "";
+            var critType = "";
+            if (!string.IsNullOrEmpty(critical))
+            {
+                var match = CriticalRegex.Match(critical);
+                critSize = match.Groups[1].Value.Trim();
+                if (match.Groups.Count == 3)
+                    critType = match.Groups[2].Value.Trim().FirstCharToUpper();
+            }
+                
             var effectStrings = strings
                 .Select(s =>
                 {
-                    foreach (var regex in SpellRegex)
+                    
+                    var materialMatch = MaterialRegex.Match(s);
+                    if (materialMatch.Success)
                     {
-                        var match = regex.Match(s);
-                        while (match.Success)
+                        s = s.Replace(materialMatch.Groups[0].Value, "")
+                            .Trim();
+                        material = materialMatch.Groups[1].Value.FirstCharToUpper();
+                    }
+
+                    foreach (var spellRegex in SpellRegex)
+                    {
+                        var spellMatch = spellRegex.Match(s);
+                        while (spellMatch.Success)
                         {
-                            s = regex.Replace(s, $"*{match.Groups[1].Value}*{match.Groups[2].Value}", 1);
-                            match = regex.Match(s);
+                            var replace = spellMatch.Value.Replace(spellMatch.Groups[1].Value, $"*{spellMatch.Groups[1].Value}*");
+                            s = spellRegex.Replace(s, replace, 1);
+                            spellMatch = spellRegex.Match(s);
                         }
                     }
 
                     return s;
                 })
+                .Where(s => !string.IsNullOrWhiteSpace(s))
                 .ToList();
-
-            var materialString = effectStrings.FirstOrDefault(s => MaterialRegex.IsMatch(s));
-            if (materialString != null)
-            {
-                effectStrings.Remove(materialString);
-                var match = MaterialRegex.Match(materialString);
-                material = match.Groups[1].Value.FirstCharToUpper();
-            }
 
             var effect = string
                 .Join("\\n&emsp;", effectStrings);
 
-
-            var output = @$"
-{Class}{Level}['{name}'] = {{
-    'level': '{Level}',{(category == "" ? "" : "\n    'category': '{category}',\n")}
-    'school': '{school}{reversible}',{(sphere == "" ? "" : "\n    'sphere': '{sphere}',\n")}
-    'range': '{range}',
-    'duration': '{duration}',
-    'aoe': '{aoe}',
-    'components': '{components}',
-    'cast-time': '{castingTime}',
-    'saving-throw': '{save}',
-    'materials': '{material}',
-    'reference': 'p. {Page}',
-    'book': '{Book}',
-    'damage': '',
-    'damage-type': '',
-    'healing': '',
-    'effect': '{effect}'
-}};
-            ";
+            var list = new List<string>();
+            list.Add($"{Class}{Level}['{name}'] = {{");
+            list.Add($"'level': '{Level}',");
+            if (!string.IsNullOrWhiteSpace(category))
+                list.Add($"'category': '{category}',");
+            list.Add($"'school': '{school}{reversible}',");
+            if (!string.IsNullOrWhiteSpace(sphere))
+                list.Add($"'sphere': '{sphere}',");
+            list.Add($"'range': '{range}',");
+            list.Add($"'duration': '{duration}',");
+            list.Add($"'aoe': '{aoe}',");
+            list.Add($"'components': '{components}',");
+            list.Add($"'cast-time': '{castingTime}',");
+            list.Add($"'saving-throw': '{save}',");
+            if (!string.IsNullOrWhiteSpace(subtlety))
+                list.Add($"'subtlety': '{subtlety}',");
+            if (!string.IsNullOrWhiteSpace(sensory))
+                list.Add($"'sensory': '{sensory}',");
+            if (!string.IsNullOrWhiteSpace(knockdown))
+                list.Add($"'knockdown': '{knockdown}',");
+            if (!string.IsNullOrWhiteSpace(critSize))
+                list.Add($"'crit-size': '{critSize}',");
+            list.Add($"'materials': '{material}',");
+            list.Add($"'reference': 'p. {page}',");
+            list.Add($"'book': '{Book}',");
+            list.Add($"'damage': '',");
+            list.Add($"'damage-type': '{critType}',");
+            list.Add($"'healing': '',");
+            list.Add($"'effect': '{effect}'\n}};");
+            var output = string.Join("\n    ", list);
 
             Console.WriteLine($"Done with {name}");
             return output;
@@ -297,26 +378,30 @@ Table of Contents
                 return OverwriteWithScalingBase(s, matchScaling, out scaling);
             
             var staticAmount = matchStatic.Groups[1].Value;
-            var staticUnit = matchStatic.Groups[2].Value.TrimEnd('s');
+            var staticUnit = ParseUnit(matchStatic.Groups[2].Value);
             
             var scalingAmount = matchScaling.Groups[1].Value;
             if (scalingAmount.Equals("One", StringComparison.OrdinalIgnoreCase))
                 scalingAmount = "1";
             
-            var scalingUnit = matchScaling.Groups[2].Value.TrimEnd('s');
+            var scalingUnit = ParseUnit(matchScaling.Groups[2].Value);
             
             if (staticUnit != scalingUnit)
                 return OverwriteWithScalingBase(s, matchScaling, out scaling);
 
+            var plural = scalingUnit.EndsWith("feet", StringComparison.OrdinalIgnoreCase)
+                ? ""
+                : "s";
+            
             if (int.TryParse(scalingAmount, out var amount) && amount == 1)
             {
-                scaling = $"[[{staticAmount}+{ScalingClass} ]]{scalingUnit}s";
+                scaling = $"[[{staticAmount}+{ScalingClass} ]] {scalingUnit}{plural}";
                 return true;
             }
 
             if (amount > 1)
             {
-                scaling = $"[[{staticAmount}+{scalingAmount}*{ScalingClass} ]]{scalingUnit}s";
+                scaling = $"[[{staticAmount}+{scalingAmount}*{ScalingClass} ]] {scalingUnit}{plural}";
                 return true;
             }
 
@@ -330,21 +415,47 @@ Table of Contents
             if (scalingAmount.Equals("One", StringComparison.OrdinalIgnoreCase))
                 scalingAmount = "1";
             
-            var scalingUnit = match.Groups[2].Value.TrimEnd('s');
-            if (int.TryParse(scalingAmount, out var amount) && amount == 1)
+            var scalingUnit = ParseUnit(match.Groups[2].Value);
+            int.TryParse(scalingAmount, out var amount);
+            var isFeet = scalingUnit.EndsWith("feet", StringComparison.OrdinalIgnoreCase);
+            string plural; 
+            if (isFeet)
+                plural = "";
+            else if (Level == "1" && amount == 1)
+                plural = "(s)";
+            else
+                plural = "s";   
+            
+
+            if (amount == 1)
             {
-                var plural = "s";
-                scaling = s.Replace(match.Groups[0].Value, $"{ScalingClass}{scalingUnit}{plural}");
+                scaling = s.Replace(match.Groups[0].Value, $"{ScalingClass} {scalingUnit}{plural}");
                 return true;
             }
 
             if (amount > 1)
             {
-                scaling = s.Replace(match.Groups[0].Value, $"[[{amount}*{ScalingClass} ]]{scalingUnit}s");
+                scaling = s.Replace(match.Groups[0].Value, $"[[{amount}*{ScalingClass} ]] {scalingUnit}{plural}");
                 return true;
             }
 
             return false;
+        }
+
+        private static string ParseUnit(string unit)
+        {
+            var trim = unit.Trim().TrimEnd('.').TrimEnd('s').Trim();
+            trim = trim == "rd" ? "round" : trim;
+            trim = trim == "yd" ? "yard" : trim;
+            trim = trim == "hr" ? "hour" : trim;
+            var preFeet = new Regex(@"(ft\.?)(?: \w+)").Match(trim);
+            var postFeet = new Regex(@"(?:\w+ )?(ft\.?)").Match(trim);
+            if (preFeet.Success)
+                trim = trim.Replace(preFeet.Groups[1].Value, "foot");
+            if (postFeet.Success)
+                trim = trim.Replace(postFeet.Groups[1].Value, "feet");
+            
+            return trim;
         }
     }
 }

@@ -15,6 +15,6 @@ public static class ListExtensions
             return string.Empty;
 
         list.Remove(s);
-        return regex.Replace(s, "");
+        return regex.Replace(s, "").Trim();
     }
 }
